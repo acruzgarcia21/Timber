@@ -1,10 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Audio.hpp>
+#include "Include.h"
 
 using namespace sf;
 
@@ -98,15 +92,45 @@ int main()
     float timeRemaining = 6.0f;
     float timeBarWidthPerSecond = timeBarStartWidth / timeRemaining;
 
-    bool gamePaused = true;
-
-    int playerScore = 0;
+    bool gamePaused{ true };
 
     // Font
     Font textFont;
     if (!textFont.openFromFile("fonts/KOMIKAP_.ttf")) {
         std::cout << "Unable to load font file!!!";
     }
+
+    int playerScore{ 0 };
+    int highScore{ 0 };
+
+    // Keeps track of updated highscore even when game isn't running
+    std::ifstream inputFile("highscore.txt");
+    if (inputFile.is_open())
+    {
+        inputFile >> highScore;
+        inputFile.close();
+    }
+    else
+    {
+        std::cout << "No file found!" << std::endl;
+    }
+    // Updates highscore
+    if (playerScore > highScore)
+    {
+        highScore = playerScore;
+
+        std::ofstream outputFile("highscore.txt");
+        if (outputFile.is_open())
+        {
+            outputFile << highScore;
+            outputFile.close();
+        }
+    }
+
+    Text highScoreText(textFont, "High Score = " + highScore);
+    highScoreText.setCharacterSize(100);
+    highScoreText.setFillColor(Color::Yellow);
+    highScoreText.setPosition(Vector2f(20.0f, 1000.0f));
 
     // Pause screen text
     Text startingScreenText(textFont, "Press enter to start!");
@@ -343,6 +367,8 @@ int main()
             ss << "Score = " << playerScore;
             scoreText.setString(ss.str());
 
+            highScoreText.setString("High Score = " + highScore);
+
             for (int i = 0; i < NUM_BRANCHES; i++) 
             {
 
@@ -427,6 +453,7 @@ int main()
         window.draw(timeBar);
 
         window.draw(scoreText);
+        window.draw(highScoreText);
 
         if (gamePaused) {
             window.draw(startingScreenText);
